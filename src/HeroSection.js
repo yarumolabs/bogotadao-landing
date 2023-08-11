@@ -1,13 +1,13 @@
-import React, { Suspense, useRef } from 'react';
-import { Box, Typography } from '@mui/material';
-import styled from 'styled-components';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, useTexture } from '@react-three/drei';
-import { DoubleSide,   } from 'three';
-import Image1 from './images/pink-gradient1.png';
-import Image2 from './images/pink-gradient2.png';
-import Image3 from './images/pink-gradient3.png';
-
+import React, { Suspense, useRef, useState,useEffect } from "react";
+import { Box, Typography } from "@mui/material";
+import styled from "styled-components";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, useTexture, useGLTF } from "@react-three/drei";
+import { DoubleSide } from "three";
+import Image1 from "./images/pink-gradient1.png";
+import Image2 from "./images/pink-gradient2.png";
+import Image3 from "./images/pink-gradient3.png";
+import Yarumo3d from "./assets/YarumoLogo1.gltf";
 const HeroContainer = styled(Box)`
   display: flex;
   justify-content: space-between;
@@ -19,7 +19,7 @@ const HeroContainer = styled(Box)`
 
 const HeroImageContainer = styled(Box)`
   width: 50%;
-  height: auto;
+  height: 300px;
   border-radius: 10px;
   overflow: hidden;
 `;
@@ -42,7 +42,7 @@ const HeroDescription = styled(Typography)`
 `;
 
 const HeroCTA = styled.button`
-  background-color: #16AFE9;
+  background-color: #16afe9;
   color: #fff;
   /* border: 2px solid #fff; */
   border-radius: 5px;
@@ -51,55 +51,80 @@ const HeroCTA = styled.button`
 
   &:hover {
     transform: scale(1.1);
-    background-color: #1C009D;
+    background-color: #1c009d;
     color: #fff;
   }
 `;
-const Cube = () => {
+
+const Model = () => {
   const ref = useRef();
-  const { viewport } = useThree();
-  const size = Math.max(viewport.width, viewport.height) / 8;
-  const textures = useTexture([
-    Image1,
-    Image2,
-    Image3,
-  ]);
-  
+  const [direction, setDirection] = useState(1);
+  const [tiltDirection, setTiltDirection] = useState(1);
+  const gltf = useGLTF(Yarumo3d);
+
+  // Set initial tilt
+  useEffect(() => {
+    ref.current.rotation.x = Math.PI / 3;  // Adjust this value to set the initial tilt
+  }, []);
+
   useFrame(() => {
-    ref.current.rotation.x += 0.01;
-    ref.current.rotation.y += 0.01;
+    // This function is called every frame (usually 60 times per second)
+    
+    // Change the rotation around the Y-axis by a small amount
+    // `direction` determines whether the rotation is positive or negative
+    // Multiplying by 0.001 slows down the rotation to a reasonable speed
+    ref.current.rotation.y += 0.01 * direction;
+  
+    // Check if the rotation around the Y-axis has exceeded a certain limit (Pi / 0.002 radians, or about 1570 degrees)
+    // If it has, change the direction of the rotation to be negative
+    if (ref.current.rotation.y > Math.PI / 12) {
+      setDirection(-0.05);
+    } 
+    // Check if the rotation around the Y-axis has gone below a certain limit (-Pi / 0.003 radians, or about -1050 degrees)
+    // If it has, change the direction of the rotation to be positive
+    else if (ref.current.rotation.y < -Math.PI / 12) {
+      setDirection(0.05);
+    }
+  
+    // Change the rotation around the X-axis by a small amount
+    // `tiltDirection` determines whether the rotation is positive or negative
+    // Multiplying by 0.005 slows down the rotation to a reasonable speed
+    ref.current.rotation.x += 0.1 * tiltDirection;
+  
+    // Check if the rotation around the X-axis has exceeded a certain limit (Pi / 3 radians, or about 60 degrees)
+    // If it has, change the direction of the rotation to be negative
+    if (ref.current.rotation.x > Math.PI / 3) {
+      setTiltDirection(-0.05);
+    } 
+    // Check if the rotation around the X-axis has gone below a certain limit (-Pi radians, or about -180 degrees)
+    // If it has, change the direction of the rotation to be positive
+    else if (ref.current.rotation.x < Math.PI / 3.6) {
+      setTiltDirection(0.05);
+    }
   });
 
-  return (
-    <mesh ref={ref} scale={[size, size, size]}>
-      {textures.map((texture, i) => (
-        <meshStandardMaterial attachArray="material" map={texture} side={DoubleSide} key={i} />
-      ))}
-      <boxGeometry args={[1, 1, 1]} attach="geometry" />
-    </mesh>
-  );
+  return <primitive object={gltf.scene} ref={ref} position={[1, 1, 1]} />;
 };
+// ...
 
 const HeroSection = () => {
   return (
     <HeroContainer>
       <HeroImageContainer>
-        <Canvas camera={{ position: [10, 10, 15], fov: 5 }}>
+        <Canvas camera={{ position: [10, 10, 45], fov: 5 }}>
           <OrbitControls enablePan enableZoom enableRotate />
           <pointLight position={[5, 5, 15]} />
           <pointLight position={[5, 5, 10]} />
           <pointLight position={[15, 3, 1]} />
           <pointLight position={[-15, -3, -1]} />
           <Suspense fallback={null}>
-            <Cube />
+            <Model />
           </Suspense>
         </Canvas>
       </HeroImageContainer>
       <HeroText>
-        <HeroTitle variant="h1">BogotaDAO</HeroTitle>
-        <HeroDescription variant="body1">
-        BogotaDAO es una iniciativa creada por seis amigos comprometida con aprovechar la revolución de la blockchain para crear soluciones que trasciendan las fronteras convencionales. En este proyecto lo que importa no es el destino final, sino el emocionante viaje de descubrimiento y creación colectiva.
-        </HeroDescription>
+        <HeroTitle variant="h1">Sweat, Play, Earn </HeroTitle>
+        <HeroDescription variant="body1">A fitness odyssey that goes beyond the physical. Every challenge conquered, every goal met, immortalized in the blockchain. Shape your health, secure your digital legacy.</HeroDescription>
         <HeroCTA variant="contained">Join</HeroCTA>
       </HeroText>
     </HeroContainer>
