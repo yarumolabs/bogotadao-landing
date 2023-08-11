@@ -61,6 +61,19 @@ const Model = () => {
   const [direction, setDirection] = useState(1);
   const [tiltDirection, setTiltDirection] = useState(1);
   const gltf = useGLTF(Yarumo3d);
+  const [isHovered, setIsHovered] = useState(false);
+
+
+  useEffect(() => {
+    if (isHovered) {
+      ref.current.scale.set(1.1, 1.1, 1.9);
+    } else {
+      ref.current.scale.set(1, 1, 1);
+    }
+  }, [isHovered]);
+  
+
+
 
   // Set initial tilt
   useEffect(() => {
@@ -103,7 +116,23 @@ const Model = () => {
     }
   });
 
-  return <primitive object={gltf.scene} ref={ref} position={[1, 1, 1]} />;
+  return (
+    <primitive 
+      object={gltf.scene} 
+      ref={ref} 
+      position={[1, 1, 1]}
+      onPointerOver={(e) => { 
+        e.stopPropagation(); // Prevents this event from being propagated further
+        setIsHovered(true);
+      }}
+      onPointerOut={(e) => { 
+        e.stopPropagation();
+        setIsHovered(false); 
+      }}
+    />
+  );
+  
+  
 };
 // ...
 
