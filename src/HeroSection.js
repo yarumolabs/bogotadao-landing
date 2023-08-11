@@ -8,6 +8,7 @@ import Image1 from "./images/pink-gradient1.png";
 import Image2 from "./images/pink-gradient2.png";
 import Image3 from "./images/pink-gradient3.png";
 import Yarumo3d from "./assets/YarumoLogo1.gltf";
+
 const HeroContainer = styled(Box)`
   display: flex;
   justify-content: space-between;
@@ -32,8 +33,8 @@ const HeroText = styled(Box)`
   gap: 20px;
 `;
 
-const HeroTitle = styled(Typography)`
-  font-size: 36px;
+const HeroTitle = styled.h1`
+  font-size: 48px;
   font-weight: bold;
 `;
 
@@ -63,7 +64,7 @@ const Model = () => {
   const gltf = useGLTF(Yarumo3d);
   const [isHovered, setIsHovered] = useState(false);
 
-
+// React to hover state
   useEffect(() => {
     if (isHovered) {
       ref.current.scale.set(1.1, 1.1, 1.9);
